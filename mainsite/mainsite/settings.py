@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-))3l-%)=fcq4&@4izt@=4#jm)p25jj6)a*bzzm@4m-+&a5w(st"
+SECRET_KEY = "xxxxx"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "sslserver",
     "haystack",
-    "piggySQL",
 ]
 
 MIDDLEWARE = [
@@ -123,7 +122,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # SECURE_SSL_REDIRECT = True
 
-CSRF_TRUSTED_ORIGINS = ["https://*.oierpiggy.xyz"]
+CSRF_TRUSTED_ORIGINS = [""]
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240  # higher than the count of fields
 
