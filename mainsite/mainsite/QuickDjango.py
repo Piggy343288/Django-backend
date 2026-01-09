@@ -28,11 +28,11 @@ JWT_EXPIRY_YEARS = 100  # 100年有效期
 PERMITTED = 1
 logger.add("./logs/log.log", rotation="10 MB")
 HR = HttpResponse
-SuccessLink = "/downloadAction?name=Li91cGxvYWQvNS9zdWNjZXNzLnR4dA=="
-wx_key = {"appid": "wxedd5ba704cb5e248",
-          "secret": "92b474dd55e39ddde3abf124ac32ce01"}
+wx_key = {
+    "appid": "wxedd5ba704cb5e248",
+    "secret": "92b474dd55e39ddde3abf124ac32ce01"
+}
 wx_url = "https://api.weixin.qq.com"
-Admins = ["xiao"]
 img_exts = ["jpg", "png", "jpeg", "gif"]
 JsonResponses = {
     "100": "Continue",
@@ -147,9 +147,7 @@ def force_login(resp=redirect_to_login, judge=is_login):
                 return func(req, *args, **kwargs)
             else:
                 return resp(ret)
-
         return wrapper
-
     return decoator
 
 
