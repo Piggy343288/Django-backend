@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "xxxxx"
+SECRET_KEY = "django-insecure-))3l-%)=fcq4&@4izt@=4#jm)p25jj6)a*bzzm@4m-+&a5w(st"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,12 +37,15 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "sslserver",
-    "haystack",
+    "corsheaders",  # 添加CORS支持
+    # "haystack",  # 临时注释掉以创建迁移
+    "piggySQL",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",  # 添加CORS中间件，放在最前面
     "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",  # 保留Session支持JWT向后兼容
     "django.middleware.common.CommonMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -74,12 +77,31 @@ WSGI_APPLICATION = "mainsite.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+# 临时使用SQLite3解决认证问题
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+
+# MySQL配置（暂时禁用，等待认证问题解决）
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.mysql",
+#         "NAME": "mainsite_db",
+#         "USER": "root",
+#         "PASSWORD": "password",
+#         "HOST": "localhost",
+#         "PORT": "3306",
+#         "OPTIONS": {
+#             "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+#         },
+#         "TEST": {
+#             "NAME": "test_mainsite_db",
+#         },
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -122,7 +144,37 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # SECURE_SSL_REDIRECT = True
 
-CSRF_TRUSTED_ORIGINS = [""]
+CSRF_TRUSTED_ORIGINS = ["https://*.oierpiggy.xyz"]
+
+# CORS配置
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8080",  # 你的前端H5域名
+]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [  # 允许的HTTP方法
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS'
+]
+CORS_ALLOW_HEADERS = [  # 允许的请求头
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'access-control-allow-origin',
+    # 移除了access-control-allow-origin，因为这是响应头而不是请求头
+]
+# 确保OPTIONS请求能够被正确处理
+CORS_PREFLIGHT_MAX_AGE = 86400  # 预检请求结果缓存时间，单位为秒
+# 允许所有的域名（已通过CORS_ALLOW_ALL_ORIGINS = True实现）
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240  # higher than the count of fields
 
@@ -133,6 +185,7 @@ HAYSTACK_CONNECTIONS = {
     }
 }
 
+SESSION_COOKIE_PATH = '/'
 
 HAYSTACK_SEARCH_RESULTS_PER_PAGE = 25
 

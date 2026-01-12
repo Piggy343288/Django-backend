@@ -8,8 +8,8 @@ from django.shortcuts import render
 from django.http import Http404, JsonResponse
 from django.core.paginator import InvalidPage, Paginator
 
-from haystack.query import EmptySearchQuerySet
-from haystack.forms import FacetedSearchForm, ModelSearchForm
+# from haystack.query import EmptySearchQuerySet  # 临时注释掉以避免 haystack 模块导入错误
+# from haystack.forms import FacetedSearchForm, ModelSearchForm  # 临时注释掉以避免 haystack 模块导入错误
 
 from .QuickDjango import b64encode, get_user, wx_url, token
 from .QuickDjango import qrender, render, use, QJR, b64decode, logger

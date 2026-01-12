@@ -16,6 +16,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
+from .Phone_verify import invoke_send_message, verify_code, connect_user_to_phone
 
 from . import views
 from . import NetDisk
@@ -31,9 +32,14 @@ favicon = r"https://cdn.luogu.com.cn/upload/image_hosting/xwx6rxi5.png"
 urlpatterns = [
     path(r"favicon.ico", RedirectView.as_view(url=favicon)),
     path("whatsthis/", admin.site.urls),
+    path('api/phone/send_code/', invoke_send_message,
+         name='send_verification_code'),
+    path('api/phone/verify/', verify_code, name='verify_phone_code'),
+    path('api/user/connect/phone/', connect_user_to_phone,
+         name='connect_user_to_phone')
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # paths
 urlpatterns += Users.urls
-urlpatterns += views.urls
+# urlpatterns += views.urls
 urlpatterns += NetDisk.urls

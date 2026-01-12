@@ -9,7 +9,7 @@ import requests
 import shutil
 from json import loads, dumps
 from django.http import FileResponse
-from piggySQL.models import User, Plan, Tag, File, Article, delete_user, defaultImg
+from piggySQL.models import User, File, delete_user, defaultImg
 
 
 def Downloadpath(filePath):
@@ -58,10 +58,6 @@ class Upload:
             ultimate_hash=hashlib.md5((hash_code + f"_{u}_{token.timestamp}").encode("utf8")).hexdigest()
         )
 
-        if id is not None:
-            plan = Plan.objects.get(id=id)
-            plan.linkedFile = file.ultimate_hash
-            plan.save()
         return (200, file.ultimate_hash)
 
     @use("POST")
@@ -99,12 +95,12 @@ class Download:
         filename = filename.split("/")
         fileObj = File.objects.filter(name=filename[-1], UserFrom=filename[2])
         if not fileObj.exists():
-            return QJR(404)
+            return QJR(404, "文件不存在")
         fileObj = fileObj[0]
         filename = fileObj.filePath
         if not os.path.exists(filename):
             File.objects.get(filePath=filename).delete()
-            return QJR(404)
+            return QJR(404, "文件不存在")
         if request.GET.get("base64", None) is None:
             return Download.downloadHandle(filename, fileObj.name)
         else:
@@ -113,17 +109,18 @@ class Download:
     @use("GET")
     def downloadAction_v2(request):
         fileObj = File.objects.filter(ultimate_hash=request.GET.get("hash"))
+        print(fileObj)
         if len(fileObj) > 1:
             raise ValueError("Should be unique.")
         else:
             fileObj = fileObj[0]
         filename = fileObj.filePath
         if request.GET.get("base64", None) is None:
-            return Download.downloadHandle(filename, fileObj.name)
+            return Download.downloadHandle(filename, fileObj.name, fileObj)
         else:
             return QJR(200, b64encode(open(filename, "rb").read()))
 
-    def downloadHandle(filename, rawname = None):
+    def downloadHandle(filename, rawname = None, fileObj=None):
         resp = FileResponse(open(filename, 'rb'))
         resp['Content-Type'] = 'application/octet-stream'
         if rawname is None:
@@ -131,6 +128,27 @@ class Download:
         rawname = rawname.encode('utf-8').decode('ISO-8859-1')
         resp['Content-Disposition'] = \
             f'attachment;filename="{rawname}"'
+        
+        # 根据文件类型设置缓存策略
+        if fileObj and hasattr(fileObj, 'isPrivate'):
+            if fileObj.isPrivate:
+                # 私有文件不设置长期缓存
+                resp['Cache-Control'] = 'private, no-cache'
+            else:
+                # 公有文件设置一年缓存
+                from datetime import datetime, timedelta
+                expires = datetime.utcnow() + timedelta(days=365)
+                resp['Cache-Control'] = 'public, max-age=31536000'  # 一年缓存
+                resp['Expires'] = expires.strftime('%a, %d %b %Y %H:%M:%S GMT')
+                resp['Last-Modified'] = datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
+        else:
+            # 未知文件类型，默认设置一年缓存
+            from datetime import datetime, timedelta
+            expires = datetime.utcnow() + timedelta(days=365)
+            resp['Cache-Control'] = 'public, max-age=31536000'  # 一年缓存
+            resp['Expires'] = expires.strftime('%a, %d %b %Y %H:%M:%S GMT')
+            resp['Last-Modified'] = datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
+        
         return resp
 
     urls = [
